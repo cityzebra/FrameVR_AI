@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-const openAIKey = 'mykey';
-=======
-const openAIKey = 'your-api-key';
->>>>>>> parent of c6bb5c1 (Update)
 const documents = [
     // Add your documents here as strings
     "Document 1 content...",
@@ -19,7 +14,7 @@ function findMostRelevantDocument(question) {
     return documents.length > 0 ? documents[0] : "No relevant document found.";
 }
 
-async function queryOpenAI(question) {
+async function queryOpenAI(question, key) {
     const relevantDocument = findMostRelevantDocument(question);
     const prompt = `User asked: ${question}\nDocument says: ${relevantDocument}\nAnswer:`;
 
@@ -33,7 +28,7 @@ async function queryOpenAI(question) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${openAIKey}`
+            'Authorization': `Bearer ${key}`
         },
         body: JSON.stringify(requestBody)
     });
@@ -43,12 +38,13 @@ async function queryOpenAI(question) {
 }
 
 // Example usage: Call this function when the user submits a question
-async function handleUserQuestion(question) {
-    const answer = await queryOpenAI(question);
+async function handleUserQuestion(question, key) {
+    const answer = await queryOpenAI(question, key);
     document.getElementById('answerText').innerText = answer; // Display the answer in the VR environment
 }
 
 function submitQuestion() {
+    const openAIKey = document.getElementById('key').value;
     const question = document.getElementById('userQuestion').value;
-    handleUserQuestion(question);
+    handleUserQuestion(question, openAIKey);
 }
