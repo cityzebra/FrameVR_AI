@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+const openAIKey = 'mykey';
+=======
 const openAIKey = 'your-api-key';
+>>>>>>> parent of c6bb5c1 (Update)
 const documents = [
     // Add your documents here as strings
     "Document 1 content...",
