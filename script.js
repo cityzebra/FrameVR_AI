@@ -40,12 +40,14 @@ async function handleUserQuestion(question) {
         });
 
         if (!response.ok) {
-            throw new Error('API request failed');
+            const errorText = await response.text();
+            throw new Error(`API request failed: ${errorText}`);
         }
 
         const data = await response.json();
         document.getElementById('answerText').innerText = data.choices[0].text;
     } catch (error) {
+        console.error("Error:", error);
         document.getElementById('answerText').innerText = `Error: ${error.message}`;
     }
 }
