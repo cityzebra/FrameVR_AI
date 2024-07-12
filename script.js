@@ -24,7 +24,7 @@ async function handleUserQuestion(question) {
     const relevantDocument = findMostRelevantDocument(question);
 
     const requestBody = {
-        model: "text-davinci-003",
+        model: "gpt-3.5-turbo-instruct",
         prompt: `User asked: ${question}\nDocument says: ${relevantDocument}\nAnswer:`,
         max_tokens: 150
     };
