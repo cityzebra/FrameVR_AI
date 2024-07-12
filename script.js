@@ -14,37 +14,43 @@ function findMostRelevantDocument(question) {
     return documents.length > 0 ? documents[0] : "No relevant document found.";
 }
 
-async function queryOpenAI(question, key) {
+async function handleUserQuestion(question) {
+    const apiKey = document.getElementById('apiKey').value;
+    if (!apiKey) {
+        alert("Please enter your OpenAI API key.");
+        return;
+    }
+
     const relevantDocument = findMostRelevantDocument(question);
-    const prompt = `User asked: ${question}\nDocument says: ${relevantDocument}\nAnswer:`;
 
     const requestBody = {
-        model: "text-davinci-003",  // or "gpt-4" if available
-        prompt: prompt,
+        model: "text-davinci-003",
+        prompt: `User asked: ${question}\nDocument says: ${relevantDocument}\nAnswer:`,
         max_tokens: 150
     };
 
-    const response = await fetch('https://api.openai.com/v1/completions', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${key}`
-        },
-        body: JSON.stringify(requestBody)
-    });
+    try {
+        const response = await fetch('https://api.openai.com/v1/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify(requestBody)
+        });
 
-    const data = await response.json();
-    return data.choices[0].text;
-}
+        if (!response.ok) {
+            throw new Error('API request failed');
+        }
 
-// Example usage: Call this function when the user submits a question
-async function handleUserQuestion(question, key) {
-    const answer = await queryOpenAI(question, key);
-    document.getElementById('answerText').innerText = answer; // Display the answer in the VR environment
+        const data = await response.json();
+        document.getElementById('answerText').innerText = data.choices[0].text;
+    } catch (error) {
+        document.getElementById('answerText').innerText = `Error: ${error.message}`;
+    }
 }
 
 function submitQuestion() {
-    const openAIKey = document.getElementById('key').value;
     const question = document.getElementById('userQuestion').value;
-    handleUserQuestion(question, openAIKey);
+    handleUserQuestion(question);
 }
