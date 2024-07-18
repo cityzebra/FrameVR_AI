@@ -5,6 +5,54 @@
     <title>OpenAI Query in FrameVR</title>
     <script src="script.js" defer></script>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        #api-key-input {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        #apiKey {
+            width: 400px;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+
+        #question-input {
+            margin-bottom: 20px;
+        }
+
+        #userQuestion {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        #document-input {
+            margin-bottom: 20px;
+        }
+
+        #documentContent {
+            width: 100%;
+            height: 100px;
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        #fileInput {
+            margin-top: 10px;
+        }
+
         #answer-output {
             margin-top: 20px;
         }
@@ -24,11 +72,18 @@
 </head>
 <body>
     <div id="api-key-input">
+        <label for="apiKey">API Key:</label>
         <input type="text" id="apiKey" placeholder="Enter your OpenAI API key">
     </div>
     <div id="question-input">
-        <input type="text" id="userQuestion" placeholder="Ask a question">
+        <label for="userQuestion">Question:</label>
+        <textarea id="userQuestion" placeholder="Ask a question"></textarea>
         <button onclick="submitQuestion()">Submit</button>
+    </div>
+    <div id="document-input">
+        <label for="documentContent">Document Content:</label>
+        <textarea id="documentContent" placeholder="Paste or type document content here"></textarea>
+        <input type="file" id="fileInput" accept=".txt" onchange="handleFileUpload(event)">
     </div>
     <div id="answer-output">
         <span id="answerLabel">Answer:</span>
