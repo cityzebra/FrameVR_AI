@@ -24,8 +24,11 @@ async function handleUserQuestion(question) {
     const relevantDocument = findMostRelevantDocument(question);
 
     const requestBody = {
-        model: "gpt-4o",
-        prompt: `User asked: ${question}\nDocument says: ${relevantDocument}\nAnswer:`,
+        model: "gpt-4o",  // Use the appropriate model name
+        messages: [
+            { role: "system", content: "You are a helpful assistant." },
+            { role: "user", content: `User asked: ${question}\nDocument says: ${relevantDocument}\nAnswer:` }
+        ],
         max_tokens: 150
     };
 
@@ -45,7 +48,7 @@ async function handleUserQuestion(question) {
         }
 
         const data = await response.json();
-        document.getElementById('answerText').innerText = data.choices[0].text;
+        document.getElementById('answerText').innerText = data.choices[0].message.content.trim();
     } catch (error) {
         console.error("Error:", error);
         document.getElementById('answerText').innerText = `Error: ${error.message}`;
