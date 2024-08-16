@@ -1,8 +1,56 @@
-const documents = [
-    // Add your documents here as strings
-    "Document 1 content...",
-    "Document 2 content...",
-];
+let documents = [];
+
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    const fileType = file.type;
+
+    if (fileType === "application/pdf") {
+        extractTextFromPDF(file);
+    } else if (fileType === "text/plain") {
+        readTextFile(file);
+    } else {
+        alert("Unsupported file type. Please upload a PDF or plain text file.");
+    }
+}
+
+function readTextFile(file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        documents.push(e.target.result);
+        document.getElementById('documentContent').value += `\n${e.target.result}`;
+    };
+    reader.readAsText(file);
+}
+
+function extractTextFromPDF(file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const typedArray = new Uint8Array(e.target.result);
+        pdfjsLib.getDocument(typedArray).promise.then(function (pdf) {
+            let textPromises = [];
+            for (let i = 1; i <= pdf.numPages; i++) {
+                textPromises.push(pdf.getPage(i).then(function (page) {
+                    return page.getTextContent().then(function (textContent) {
+                        return textContent.items.map(item => item.str).join(" ");
+                    });
+                }));
+            }
+            Promise.all(textPromises).then(function (pagesText) {
+                const fullText = pagesText.join("\n");
+                documents.push(fullText);
+                document.getElementById('documentContent').value += `\n${fullText}`;
+            });
+        });
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function addDocumentContent() {
+    const content = document.getElementById('documentContent').value;
+    if (content) {
+        documents.push(content);
+    }
+}
 
 function findMostRelevantDocument(question) {
     // Simple matching for demo purposes. Implement a more advanced algorithm if needed.
@@ -20,6 +68,8 @@ async function handleUserQuestion(question) {
         alert("Please enter your OpenAI API key.");
         return;
     }
+
+    addDocumentContent();
 
     const relevantDocument = findMostRelevantDocument(question);
 

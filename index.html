@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>OpenAI Query in FrameVR</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script> <!-- Include pdf.js -->
     <script src="script.js" defer></script>
     <style>
         body {
@@ -83,7 +84,7 @@
     <div id="document-input">
         <label for="documentContent">Document Content:</label>
         <textarea id="documentContent" placeholder="Paste or type document content here"></textarea>
-        <input type="file" id="fileInput" accept=".txt" onchange="handleFileUpload(event)">
+        <input type="file" id="fileInput" accept=".txt,.pdf" onchange="handleFileUpload(event)">
     </div>
     <div id="answer-output">
         <span id="answerLabel">Answer:</span>
