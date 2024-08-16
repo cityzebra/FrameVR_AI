@@ -52,14 +52,9 @@ function addDocumentContent() {
     }
 }
 
-function findMostRelevantDocument(question) {
-    // Simple matching for demo purposes. Implement a more advanced algorithm if needed.
-    for (let doc of documents) {
-        if (doc.includes(question)) {
-            return doc;
-        }
-    }
-    return documents.length > 0 ? documents[0] : "No relevant document found.";
+function createDocumentSummary() {
+    // Combine all document texts into a single string to provide context
+    return documents.join("\n\n");
 }
 
 async function handleUserQuestion(question) {
@@ -71,13 +66,13 @@ async function handleUserQuestion(question) {
 
     addDocumentContent();
 
-    const relevantDocument = findMostRelevantDocument(question);
+    const documentContext = createDocumentSummary();
 
     const requestBody = {
         model: "gpt-4o",  // Use the appropriate model name
         messages: [
             { role: "system", content: "You are a helpful assistant." },
-            { role: "user", content: `User asked: ${question}\nDocument says: ${relevantDocument}\nAnswer:` }
+            { role: "user", content: `Here is some reference information:\n\n${documentContext}\n\nNow, based on this information, answer the following question:\n\n${question}` }
         ],
         max_tokens: 150
     };
