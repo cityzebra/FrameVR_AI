@@ -2,93 +2,143 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>OpenAI Query in FrameVR</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script> <!-- Include pdf.js -->
-    <script src="script.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat Interface</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            margin: 0;
         }
 
-        #api-key-input {
+        .left-panel {
+            width: 25%;
+            background-color: lightgrey;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .right-panel {
+            width: 75%;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .chat-container {
+            flex-grow: 1;
+            overflow-y: auto;
             margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        #apiKey {
-            width: 400px;
-            padding: 8px;
-            margin-bottom: 10px;
-        }
-
-        #question-input {
-            margin-bottom: 20px;
-        }
-
-        #userQuestion {
-            width: 100%;
-            height: 150px;
-            padding: 10px;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-
-        #document-input {
-            margin-bottom: 20px;
-        }
-
-        #documentContent {
-            width: 100%;
-            height: 100px;
-            margin-top: 10px;
-            padding: 10px;
-            font-size: 14px;
-        }
-
-        #fileInput {
-            margin-top: 10px;
-        }
-
-        #answer-output {
-            margin-top: 20px;
-        }
-
-        #answerText {
-            background-color: #f0f8ff;
             border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .message {
+            margin-bottom: 10px;
             padding: 10px;
             border-radius: 5px;
         }
 
-        #answerLabel {
-            font-weight: bold;
-            margin-right: 10px;
+            .message.user {
+                background-color: #e1f5fe;
+                text-align: right;
+            }
+
+            .message.bot {
+                background-color: #fff9c4;
+                text-align: left;
+            }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
         }
+
+            .input-container input[type="text"] {
+                flex-grow: 1;
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                font-size: 16px;
+            }
+
+            .input-container button {
+                padding: 10px 20px;
+                border: none;
+                background-color: #007bff;
+                color: white;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+
+                .input-container button:hover {
+                    background-color: #0056b3;
+                }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        textarea {
+            width: 90%;
+            height: 400px;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .pdf-upload {
+            margin-bottom: 15px;
+        }
+
+            .pdf-upload button {
+                padding: 10px 20px;
+                border: none;
+                background-color: #28a745;
+                color: white;
+                border-radius: 5px;
+                cursor: pointer;
+                margin-top: 10px;
+            }
+
+                .pdf-upload button:hover {
+                    background-color: #218838;
+                }
     </style>
 </head>
 <body>
-    <div id="api-key-input">
-        <label for="apiKey">API Key:</label>
-        <input type="text" id="apiKey" placeholder="Enter your OpenAI API key">
+
+    <div class="left-panel">
+        <label for="document-content">Document Content</label>
+        <textarea id="document-content" placeholder="Paste document content here..."></textarea>
+
+        <div class="pdf-upload">
+            <label for="pdf-file">Upload PDF File</label>
+            <input type="file" id="pdf-file" accept="application/pdf">
+            <button onclick="uploadPDF()">Upload</button>
+        </div>
     </div>
-    <div id="question-input">
-        <label for="userQuestion">Question:</label>
-        <textarea id="userQuestion" placeholder="Ask a question"></textarea>
-        <button onclick="submitQuestion()">Submit</button>
+
+    <div class="right-panel">
+        <div class="chat-container" id="chat-container">
+            <!-- Chat messages will be dynamically added here -->
+        </div>
+        <div class="input-container">
+            <input type="text" id="question-input" placeholder="Type your question here...">
+            <button onclick="sendQuestion()">Submit</button>
+        </div>
     </div>
-    <div id="document-input">
-        <label for="documentContent">Document Content:</label>
-        <textarea id="documentContent" placeholder="Paste or type document content here"></textarea>
-        <input type="file" id="fileInput" accept=".txt,.pdf" onchange="handleFileUpload(event)">
-    </div>
-    <div id="answer-output">
-        <span id="answerLabel">Answer:</span>
-        <p id="answerText">Answer will be displayed here</p>
-    </div>
+
+    <!-- Include pdf.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

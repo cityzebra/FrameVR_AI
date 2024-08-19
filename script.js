@@ -1,106 +1,102 @@
-let documents = [];
+function sendQuestion()
+{
+    const questionInput = document.getElementById('question-input');
+    const question = questionInput.value.trim();
 
-function handleFileUpload(event) {
-    const file = event.target.files[0];
-    const fileType = file.type;
+    if (question === '') return;
 
-    if (fileType === "application/pdf") {
-        extractTextFromPDF(file);
-    } else if (fileType === "text/plain") {
-        readTextFile(file);
-    } else {
-        alert("Unsupported file type. Please upload a PDF or plain text file.");
-    }
-}
+    // Add the user's question to the chat
+    addMessageToChat(question, 'user');
 
-function readTextFile(file) {
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        documents.push(e.target.result);
-        document.getElementById('documentContent').value += `\n${e.target.result}`;
-    };
-    reader.readAsText(file);
-}
+    // Clear the input field
+    questionInput.value = '';
 
-function extractTextFromPDF(file) {
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        const typedArray = new Uint8Array(e.target.result);
-        pdfjsLib.getDocument(typedArray).promise.then(function (pdf) {
-            let textPromises = [];
-            for (let i = 1; i <= pdf.numPages; i++) {
-                textPromises.push(pdf.getPage(i).then(function (page) {
-                    return page.getTextContent().then(function (textContent) {
-                        return textContent.items.map(item => item.str).join(" ");
-                    });
-                }));
+    // Get the document content
+    const documentContent = document.getElementById('document-content').value.trim();
+
+    // Perform the API request without needing the API key from the client-side
+    fetch('http://localhost:5000/api/query',
+        {
+            method: 'POST',
+            headers:
+            {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(
+            {
+                documentContext: documentContent,
+                question: question
             }
-            Promise.all(textPromises).then(function (pagesText) {
-                const fullText = pagesText.join("\n");
-                documents.push(fullText);
-                document.getElementById('documentContent').value += `\n${fullText}`;
-            });
+            )
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                addMessageToChat(`Error: ${data.error}`, 'bot');
+            } else {
+                const answer = data.choices[0].message.content;
+                addMessageToChat(answer, 'bot');
+            }
+        })
+        .catch(error => {
+            addMessageToChat(`Error: ${error.message}`, 'bot');
         });
-    };
-    reader.readAsArrayBuffer(file);
 }
 
-function addDocumentContent() {
-    const content = document.getElementById('documentContent').value;
-    if (content) {
-        documents.push(content);
-    }
+function addMessageToChat(message, sender) {
+    const chatContainer = document.getElementById('chat-container');
+    const messageElement = document.createElement('div');
+    messageElement.className = `message ${sender}`;
+    messageElement.textContent = message;
+    chatContainer.appendChild(messageElement);
+
+    // Scroll to the bottom of the chat container
+    chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-function createDocumentSummary() {
-    // Combine all document texts into a single string to provide context
-    return documents.join("\n\n");
-}
+function uploadPDF() {
+    const pdfFile = document.getElementById('pdf-file').files[0];
 
-async function handleUserQuestion(question) {
-    const apiKey = document.getElementById('apiKey').value;
-    if (!apiKey) {
-        alert("Please enter your OpenAI API key.");
+    if (!pdfFile) {
+        alert('Please select a PDF file to upload.');
         return;
     }
 
-    addDocumentContent();
+    const reader = new FileReader();
 
-    const documentContext = createDocumentSummary();
+    reader.onload = function (event) {
+        const typedArray = new Uint8Array(event.target.result);
 
-    const requestBody = {
-        model: "gpt-4o",  // Use the appropriate model name
-        messages: [
-            { role: "system", content: "You are a helpful assistant." },
-            { role: "user", content: `Here is some reference information:\n\n${documentContext}\n\nNow, based on this information, answer the following question:\n\n${question}` }
-        ],
-        max_tokens: 150
+        // Load the PDF using pdfjsLib
+        pdfjsLib.getDocument(typedArray).promise.then(function (pdf) {
+            let pdfText = '';
+
+            // Fetch each page and extract the text
+            const numPages = pdf.numPages;
+            const promises = [];
+
+            for (let i = 1; i <= numPages; i++) {
+                promises.push(pdf.getPage(i).then(function (page) {
+                    return page.getTextContent().then(function (textContent) {
+                        const pageText = textContent.items.map(item => item.str).join(' ');
+                        pdfText += pageText + '\n';
+                    });
+                }));
+            }
+
+            Promise.all(promises).then(function () {
+                // Display the extracted text in the textarea
+                document.getElementById('document-content').value = pdfText;
+            });
+        });
     };
 
-    try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify(requestBody)
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`API request failed: ${errorText}`);
-        }
-
-        const data = await response.json();
-        document.getElementById('answerText').innerText = data.choices[0].message.content.trim();
-    } catch (error) {
-        console.error("Error:", error);
-        document.getElementById('answerText').innerText = `Error: ${error.message}`;
+    reader.readAsArrayBuffer(pdfFile);
+}
+// Add event listener for Enter key on the question input field
+document.getElementById('question-input').addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') {
+        event.preventDefault(); // Prevent default Enter behavior
+        sendQuestion(); // Trigger question submission
     }
-}
-
-function submitQuestion() {
-    const question = document.getElementById('userQuestion').value;
-    handleUserQuestion(question);
-}
+});
